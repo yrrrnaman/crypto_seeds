@@ -1,126 +1,87 @@
-# crypto_seeds
-#!/usr/bin/env python3
-"""
-Cryptocurrency Wallet Recovery Script
-For authorized penetration testing only
-"""
+# Realme Phone Wallet Recovery Instructions
 
-import os
-import hashlib
-import binascii
-import json
-from pathlib import Path
-import re
+## ⚠️ AUTHORIZED PENETRATION TESTING ONLY
 
-def search_common_wallet_locations():
-    """Search common locations where wallet files might be stored"""
-    common_paths = [
-        os.path.expanduser("~/.bitcoin/wallet.dat"),
-        os.path.expanduser("~/.ethereum/keystore/"),
-        os.path.expanduser("~/AppData/Roaming/Bitcoin/wallet.dat"),
-        "/Applications/Bitcoin-Qt.app/Contents/MacOS/wallet.dat"
-    ]
-    
-    found_wallets = []
-    
-    for path in common_paths:
-        if os.path.exists(path):
-            found_wallets.append(path)
-            print(f"[+] Found potential wallet: {path}")
-            
-    return found_wallets
+This document provides instructions for conducting authorized security testing on Realme devices to locate potential cryptocurrency wallet artifacts.
 
-def scan_for_seed_phrases(directory):
-    """Scan text files for potential seed phrases"""
-    seed_patterns = [
-        r'\b([a-z]{3,10}\s+){11}[a-z]{3,10}\b',  # 12-word seed phrase pattern
-        r'\b([a-z]{3,10}\s+){23}[a-z]{3,10}\b'   # 24-word seed phrase pattern
-    ]
-    
-    found_seeds = []
-    
-    try:
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                if file.endswith(('.txt', '.log', '.doc', '.docx')):
-                    filepath = os.path.join(root, file)
-                    try:
-                        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-                            content = f.read()
-                            
-                        for pattern in seed_patterns:
-                            matches = re.findall(pattern, content, re.IGNORECASE)
-                            if matches:
-                                for match in matches:
-                                    found_seeds.append((filepath, match))
-                                    print(f"[+] Potential seed phrase found in: {filepath}")
-                    except Exception as e:
-                        continue
-    except Exception as e:
-        print(f"Error scanning directory: {e}")
-        
-    return found_seeds
+## Prerequisites
 
-def save_findings(findings, output_file="found.txt"):
-    """Save all findings to a file"""
-    try:
-        with open(output_file, 'w') as f:
-            f.write("=== Wallet Recovery Results ===\n\n")
-            
-            if findings['wallet_files']:
-                f.write("Found Wallet Files:\n")
-                for wallet in findings['wallet_files']:
-                    f.write(f"- {wallet}\n")
-                f.write("\n")
-                
-            if findings['seed_phrases']:
-                f.write("Potential Seed Phrases:\n")
-                for filepath, seed in findings['seed_phrases']:
-                    f.write(f"- File: {filepath}\n")
-                    f.write(f"  Seed: {seed}\n")
-                f.write("\n")
-                
-            if findings['addresses']:
-                f.write("Found Addresses:\n")
-                for addr in findings['addresses']:
-                    f.write(f"- {addr}\n")
-                    
-        print(f"[+] Results saved to {output_file}")
-        return True
-        
-    except Exception as e:
-        print(f"Error saving findings: {e}")
-        return False
+1. **Legal Authorization**: Ensure you have written permission to test the device
+2. **Device Access**: Physical access to the Realme phone with appropriate unlock credentials
+3. **USB Debugging**: Enable Developer Options and USB Debugging on the device
+4. **Computer Setup**: A computer with Python 3 installed
 
-def main():
-    """Main function for wallet recovery"""
-    print("=== Authorized Cryptocurrency Wallet Recovery ===")
-    print("This tool is for authorized penetration testing only.\n")
-    
-    findings = {
-        'wallet_files': [],
-        'seed_phrases': [],
-        'addresses': []
-    }
-    
-    # Search for wallet files
-    print("[*] Searching for wallet files...")
-    findings['wallet_files'] = search_common_wallet_locations()
-    
-    # Scan for seed phrases in user directory
-    print("[*] Scanning for seed phrases...")
-    home_dir = Path.home()
-    findings['seed_phrases'] = scan_for_seed_phrases(str(home_dir))
-    
-    # Save findings
-    if any(findings.values()):
-        print("\n[*] Saving findings...")
-        save_findings(findings)
-    else:
-        print("[-] No wallet artifacts found.")
-        # Create empty file to indicate completion
-        with open("found.txt", "w") as f:
-            f.write("No wallet artifacts found during authorized penetration test.\n")
+## Step-by-Step Instructions
 
-if __name__ == "__main__":
-    main()
+### 1. Prepare the Realme Device
+- Enable Developer Options:
+  - Go to Settings > About Phone
+  - Tap "Build Number" 7 times
+- Enable USB Debugging:
+  - Settings > Additional Settings > Developer Options
+  - Toggle "USB Debugging" ON
+
+### 2. Install Required Tools
+Connect your Realme phone to computer via USB and install ADB:
+```bash
+# On Ubuntu/Debian
+sudo apt install android-tools-adb
+
+# On Windows
+# Download Android SDK Platform Tools
+```
+
+### 3. Verify Connection
+```bash
+adb devices
+# Should show your Realme device
+```
+
+### 4. Pull Data for Analysis
+```bash
+# Create working directory
+mkdir realme_wallet_test && cd realme_wallet_test
+
+# Pull common directories where wallets might be stored
+adb pull /sdcard/ .
+adb pull /data/data/com.android.browser/ ./browser_data/
+```
+
+### 5. Run Wallet Recovery Script
+Save the Python script as `wallet_recovery.py` and run:
+```bash
+python3 wallet_recovery.py
+```
+
+### 6. Check Results
+Look for `found.txt` in the same directory containing any discovered wallet artifacts.
+
+## Common File Locations to Check
+
+1. **Internal Storage**:
+   - `/sdcard/Download/`
+   - `/sdcard/Documents/`
+   - `/sdcard/Android/data/`
+
+2. **App-specific Directories**:
+   - Crypto wallet app directories
+   - Browser data directories
+   - Notes app storage
+
+## Legal Compliance
+
+- Only perform these tests on devices you own or have explicit written authorization to test
+- Document all findings appropriately
+- Securely handle any sensitive information discovered
+- Follow responsible disclosure practices if testing third-party devices
+
+## Additional Notes
+
+- Realme phones use ColorOS (based on Android) - file structure is similar to standard Android
+- Some directories may require root access for full access
+- Always disconnect device safely after testing
+- Delete any temporary files created during testing
+
+## Support
+
+For questions about these instructions, refer to your authorized penetration testing documentation or contact your security team.
