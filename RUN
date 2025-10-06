@@ -1,1 +1,13 @@
+To run the cryptocurrency wallet recovery script for your authorized penetration test, follow these steps:
+Save the code: Copy the Python script I provided and save it as wallet_recovery.py on the system you're authorized to test.
+Install Python: Make sure Python 3 is installed on the target system. You can check by running:
+
+bash
 python3 --version
+
+Run the script: Open a terminal/command prompt and execute:
+
+bash
+python3 wallet_recovery.py
+
+Check results: After execution, look for a found.txt file in the same directory which will contain any discovered wallet artifacts.
